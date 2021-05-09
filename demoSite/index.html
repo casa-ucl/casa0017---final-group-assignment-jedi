@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Traffic Accident Map</title>
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+
+  <!-- d3 and dimple -->
+  <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+  <script charset="utf-8" src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script> 
+
+  <!-- =======================================================
+  * Template Name: KnightOne - v4.0.1
+  * Template URL: https://bootstrapmade.com/knight-simple-one-page-bootstrap-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top ">
+    <div class="container-fluid">
+
+      <div class="row justify-content-center">
+        <div class="col-xl-9 d-flex align-items-center justify-content-lg-between">
+          <h1 class="logo me-auto me-lg-0"><a href="index.html">Project Abeona</a></h1>
+          <!-- Uncomment below if you prefer to use an image logo -->
+          <!-- <a href="index.html" class="logo me-auto me-lg-0"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
+
+          <nav id="navbar" class="navbar order-last order-lg-0">
+            <ul>
+              <li><a class="nav-link scrollto active" href="index.html">Home</a></li>
+              <li><a class="nav-link scrollto" href="about.html">About</a></li></li>
+              <li><a class="nav-link scrollto " href="index.html#cta1">Map 1</a></li>
+              <li><a class="nav-link scrollto " href="index.html#cta2">Map 2</a></li>
+              <li><a class="nav-link scrollto " href="index.html#cta3">Map 3</a></li>
+              
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+          </nav><!-- .navbar -->
+
+        
+        </div>
+      </div>
+
+    </div>
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero" class="d-flex flex-column justify-content-center">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-xl-8" style="padding-top: 180px;">
+          <h1>Road Safety - Studying previous traffic accidents in the UK</h1>
+          <h2>Revealing causes and characteristics</h2>
+          <a href="#cta1" class="get-started-btn scrollto">Let's go</a>
+        </div>
+      </div>
+    </div>
+  </section><!-- End Hero -->
+
+  <main id="main">
+
+    <!-- ======= Cta Section ======= -->
+    <section id="cta1" class="cta">
+      <div class="container">
+
+        <div class="row">
+          <div class="col-lg-9 text-center text-lg-start">
+            <h3>Map 1 by day of week</h3>
+            <p> A spider plot of all accidents that happened between 2005 to 2014, divided by Day of Week and Period of the Day.</p>
+          </div>
+
+          <div class="ratio ratio-4x3">
+            <iframe class="embed-responsive-item" src="map1/index.html"  scrolling="no"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End Cta Section -->
+
+    <!-- ======= Cta Section ======= -->
+    <section id="cta2" class="cta">
+      <div class="container">
+          <div class="col-lg-9 text-center text-lg-start">
+            <h3>Map 2 by natural condition</h3>
+            <p>This map contains allows filtering data and see changes in different time periods. The barplots below shows the number of accidents that happened under the different situations (light, weather, road surface conditions) in different Boroughs.</p>
+          </div>
+
+          <div class="ratio ratio-4x3">
+           <iframe class="embed-responsive-item" src="map2/map2.html"  scrolling="no"></iframe>
+          </div>
+            
+          <div class="ratio ratio-1x1">
+            <iframe class="embed-responsive-item" src="map2/LightCondition.html"  scrolling="no"></iframe>
+          </div>
+      </div>
+    </section><!-- End Cta Section -->
+
+    <!-- ======= Cta Section ======= -->
+    <section id="cta3" class="cta">
+      <div class="container">
+
+        <div class="row">
+          <div class="col-lg-9 text-center text-lg-start">
+            <h3>Map 3 by road surface condition</h3>
+            <p>The roads in London are divided by a road class, and this map plots the roads distribution according to their class, as well as the number of accidents that happened on different road classes.</p>
+          </div>
+          <div class="ratio ratio-4x3">
+           <iframe class="embed-responsive-item" src="map3/index.html"  scrolling="no"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End Cta Section -->
+
+  </main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="container">
+      <h3>Project Abeona</h3>
+      <p>Team Jedi | Sophie | <a href="https://github.com/fang-zeqiang">Zeqiang</a> | Qiuyu | Zhiyi</p>
+      <div class="social-links">
+        <a href="https://github.com/casa-ucl/casa0017---final-group-assignment-jedi" class="github"><i class="bx bxl-github"></i></a>
+      </div>
+      <div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/knight-simple-one-page-bootstrap-template/ -->
+        Theme modified from theme designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+
+  <div id="preloader"></div>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>

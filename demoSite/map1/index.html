@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+    <title></title>
+    <style>
+        .axis text {
+            font: 14px Open Sans;
+        }
+        .axis line {
+            fill: none;
+            stroke: #ddd;
+            /*stroke-dasharray: 4;*/
+        }
+        .line {
+            fill: none;
+            stroke: orange;
+            stroke-width: 3px;
+        }
+        #chart{
+            text-align:center;
+        }
+        .chart-title{
+            text-align:center;
+            font: 35px Open Sans;
+            color: #fff;
+        }
+        .tooltip {
+            font: bold 25px Open Sans;
+            /*font-family: simsun;*/
+            font-size: 12px;
+            width: 120px;
+            height: auto;
+            color: #555;
+            position: absolute;
+            text-align: left;
+            border-style: solid;
+            border-width: 2px;
+            background-color: white;
+            border-radius: 5px;
+        }
+
+         /* Slideshow container */
+        .slideshow-container {
+          position: relative;
+          background: rgba(0,0,0,0.5);
+          width: 600px;
+          color: white;
+          margin: 0 auto;
+          border-radius: 30px;
+        }
+
+        /* Slides */
+        .mySlides {
+          display: none;
+          padding: 20px 45px;
+          text-align: center;
+          font-family: Open Sans;
+        }
+
+        /* Next & previous buttons */
+        .prev, .next {
+          cursor: pointer;
+          position: absolute;
+          top: 50%;
+          width: auto;
+          margin-top: -30px;
+          padding: 16px;
+          color: #888;
+          font-weight: bold;
+          font-size: 20px;
+          border-radius: 0 3px 3px 0;
+          user-select: none;
+        }
+
+        /* Position the "next button" to the right */
+        .next {
+          position: absolute;
+          right: 0;
+          border-radius: 3px 0 0 3px;
+        }
+
+        /* On hover, add a black background color with a little bit see-through */
+        .prev:hover, .next:hover {
+          background-color: rgba(0,0,0,0.8);
+          color: white;
+        }
+
+        .card_title {
+            display: flex;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="chart">
+        <h2 class="chart-title">Accidents of 2005-2014, by Day of Week</h2>
+    </div>
+
+    <script src="d3.v5.min.js"></script>
+
+    <script>
+        var width = 960,
+            height = 600,
+            radius = Math.min(width, height) / 2 - 100;
+        var maxAngle = 24;
+        var maxValue = 0;
+        var minValue = 800;
+        var yearList = [
+            2005,2006,2007,2009,2010,2011,2012,2013,2014
+        ];
+        var yearIndex = 0;
+
+        var datalist = [];
+
+        var svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+            .attr("font-family", "Open Sans");
+
+        // Define a pop-up box, which is used to display related messages when the mouseover
+        var tooltip = d3.select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0.0);
+
+        // Generate the content of the pop-up box
+        function tooltipContent(list, title) {
+            var tpl = "<div style='margin-top:5px;'><span>"
+            tpl += "{name}: </span>{value}</div>";
+            var html = "<div style='padding-left:20px;padding-right: 20px;padding-bottom:10px;font-size:12px;'>";
+            html += "<h2>" + title + "</h2>"
+            list.forEach(function (dataItem) {
+                name = dataItem.name, value = dataItem.value;
+                html += tpl.replace("{name}", name).replace("{value}", value);
+            });
+            html += "</div>";
+            return html;
+        }
+
+        function draw() {
+            var data = datalist[0];
+            var weekName = "week"
+            var valueName = "count";
+            maxValue += minValue;
+
+            // Enumerate the seven days of the week. Also the related time point
+            var weeks = [
+                "Monday",
+                "6AM",
+                "12PM",
+                "6PM",
+                "Tuesday",
+                "6AM",
+                "12PM",
+                "6PM",
+                "Wednesday",
+                "6AM",
+                "12PM",
+                "6PM",
+                "Thursday",
+                "6AM",
+                "12PM",
+                "6PM",
+                "Friday",
+                "6AM",
+                "12PM",
+                "6PM",
+                "Saturday",
+                "6AM",
+                "12PM",
+                "6PM",
+                "Sunday",
+                "6AM",
+                "12PM",
+                "6PM"
+            ];
+            var maxAxisScale = 7 * 24 * 60;
+
+            var axisScale = d3.scaleLinear()
+                .domain([0, maxAxisScale])
+                .range([0, 2 * Math.PI]);
+
+            var r = d3.scaleLinear()
+                .domain([0, maxValue])
+                .range([0, radius]);
+
+            var computeColor = d3.interpolate(
+                d3.rgb(144, 212, 190),
+                d3.rgb(38, 135, 188))
+                ;
+            var colorLinear = d3.scaleLinear()
+                .domain([0, maxValue])
+                .range([0, 1])
+                ;
+            var color = function (value) {
+                return computeColor(colorLinear(value));
+            };
+            
+            // 9 groups for 9 time scale lines
+            var ga = svg.append("g")
+                .attr("class", "a axis")
+                .selectAll("g")
+                .data(weeks)
+                .enter()
+                .append("g")
+                .attr("transform", function (d, i) {
+                    return "rotate(" + (axisScale(i * maxAxisScale / weeks.length) * 180 / Math.PI) + ")";
+                });
+
+            ga.append("line")
+                .attr("state", d => d)
+                .attr("x2", radius);
+
+            // Generate radial text and refer to Tree of life chart in D3 Gallery
+            ga.append("text")
+                .attr("x", radius + 6)
+                .attr("dy", ".35em")
+                .style("text-anchor", function (d) { return d < 270 && d > 90 ? "end" : null; })
+                .attr("transform", function (d) {
+                    return d < 270 && d > 90 ? "rotate(180 " + (radius + 6) + ",0)" : null;
+                })
+                .style("fill", (d, i) => {
+                    if (i % 4 === 0) {
+                        return "white"
+                    }
+                    return "#aaa";
+                })
+                .text(function (d, i) { return d; });
+
+            // Use radial line drawing function
+            var line = d3.lineRadial()
+                .angle(function (d) {
+                    return axisScale(d[0]) + Math.PI / 2;
+                })
+                .radius(function (d) {
+                    return r(d[1]);
+                });
+
+            for (var index = 0; index < datalist.length; index++) {
+                // Generate data for concentric circles
+                var dataValues = [];
+                datalist[index].forEach(function (item, i) {
+                    var basicValue = item[valueName];
+                    dataValues.push([
+                        i * 15,
+                        basicValue  + minValue / datalist.length * (index + 1),   // In order to separate the 9 radial lines, a basic value is forced to increase before being converted to radius
+                        item[weekName],
+                        yearList[index],
+                        item.time,
+                        basicValue
+                    ]);
+                });
+                dataValues.push(dataValues[0]);
+
+                // Draw concentric circles
+                svg.selectAll(".area-" + index)
+                    .data([dataValues])
+                    .enter()
+                    .append("polygon")
+                    .attr("class", "area-" + index)
+                    .style("stroke-width", "1px")
+                    .style("stroke", color(minValue / datalist.length * (index + 1)))
+                    .attr("points", function (d) {
+                        var str = "";
+                        for (var pti = 0; pti < d.length; pti++) {
+                            var coors = line([d[pti]])
+                                .slice(1)
+                                .slice(0, -1);
+                            str = str + coors + " ";
+                        }
+                        return str;
+                    })
+                    .style("fill", "none")
+                    .on("mouseover", function (d,i) {
+                        d3.select(this)
+                            .style("stroke-width", "3px");
+                    })
+                    .on("mouseout", function () {
+                        d3.select(this)
+                            .style("stroke-width", "1px");
+                    });
+
+                // Draw scatter points for hover
+                svg.selectAll(".circle-" + index)
+                    .data(dataValues)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "circle-" + index)
+                    .style("stroke-width", "1px")
+                    .style("stroke", color(minValue / datalist.length * (index + 1)))
+                    .attr("cx", function (d) {
+                        var coors = line([d])
+                            .slice(1)
+                            .slice(0, -1);
+                        var arr = coors.split(",");
+                        return arr[0];
+                    })
+                    .attr("cy", function (d) {
+                        var coors = line([d])
+                            .slice(1)
+                            .slice(0, -1);
+                        var arr = coors.split(",");
+                        return arr[1];
+                    })
+                    .attr("r",0.5)
+                    .style("fill", "none")
+                    .on("mouseover", function (d, i) {
+                      // Generate the message content of box
+                        var strhtml = tooltipContent([
+                            { name: "count", value: d[5] },
+                            { name: "week", value: d[2] },
+                            { name: "time", value: d[4] }
+                        ], d[3]);
+
+                        // Show windows
+                        tooltip.html(strhtml)
+                            .style("width", "auto")
+                            .style("height", "auto")
+                            .style("left", (event.pageX - 60) + "px")
+                            .style("top", (event.pageY + 20) + "px")
+                            .style("opacity", 1.0)
+                            ;
+                        d3.select(this)
+                            .style("stroke-width", "3px");
+                    })
+                    .on("mouseout", function () {
+                        // Hide windows
+                        tooltip.style("width", 0)
+                            .style("height", 0)
+                            .style("opacity", 0.0);
+                        d3.select(this)
+                            .style("stroke-width", "1px");
+                    });
+            }
+        }
+
+        function RequsetData() {
+            if (yearIndex >= yearList.length) {
+                draw();
+                return;
+            }
+            d3.csv(yearList[yearIndex] + ".csv?v=1").then(function (data) {
+                var weekName = "week"
+                var valueName = "count";
+
+                var currentWeek = "";
+                data.forEach(function (item) {
+                    if (item[weekName] !== "") {
+                        currentWeek = item[weekName];
+                    }
+                    item[weekName] = currentWeek;
+                    item[valueName] = item[valueName] * 1;
+                    maxValue = Math.max(maxValue, item[valueName]);
+                });
+                datalist.push(data);
+                yearIndex++;
+                RequsetData();
+            });
+        }
+        RequsetData();
+    </script>
+    <div class="slideshow-container">
+
+      <!-- Full-width slides/quotes -->
+      <div class="mySlides">
+        <div class="card_title">
+        <i class="bi bi-alarm-fill" style="font-size: 2rem; vertical-align:middle"></i><h2>&nbsp; &nbsp; &nbsp; 8:30 - 8:45</h2></div>
+        <p>In London, the most dangerous time-slot for travel is 8:30-8:45. This time-slot of Thursday, Wednesday and Friday is the top 3 in the number of accidents in 9 years, with 896,895 and 892 accidents, respectively. Drivers all over London should cheer up on the morning of the working day and calm down their desire to go to work a little bit.
+        </p>
+      </div>
+
+      <div class="mySlides">
+        <div class="card_title">
+        <i class="bi bi-calendar-day-fill" style="font-size: 2rem; vertical-align:middle"></i><h2>&nbsp; &nbsp; &nbsp; Saturday</h2></div>
+        <p>The most dangerous day of the week in a year is Saturday. This happened 8 times in 9 years, except in 2012. London drivers should be more focused when driving on a rest day travel.
+        </p>
+      </div>
+
+      <!-- Next/prev buttons -->
+      <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+      <a class="next" onclick="plusSlides(1)">&#10095;</a>
+    </div>
+
+    </div>
+
+    <!-- Vendor JS Files -->
+    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="../assets/js/main.js"></script>
+
+    <script type="text/javascript">
+        var slideIndex = 1;
+        showSlides(slideIndex);
+
+        function plusSlides(n) {
+          showSlides(slideIndex += n);
+        }
+
+        function currentSlide(n) {
+          showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+          var i;
+          var slides = document.getElementsByClassName("mySlides");
+          if (n > slides.length) {slideIndex = 1}
+            if (n < 1) {slideIndex = slides.length}
+            for (i = 0; i < slides.length; i++) {
+              slides[i].style.display = "none";
+            }
+          slides[slideIndex-1].style.display = "block";
+        } 
+    </script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>road</title>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.css' rel='stylesheet'/>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha512-W7jN6TS8p1Qwh4GSXsXh0tWSdAXN4v0MEgq9uOsYcz8A/KxzSPzBL1jDPErfgKUMb11QV2BknSzY/HltjLKPfg=="
+            src="https://lib.baomitu.com/echarts/5.1.0/echarts.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: Open Sans;
+        }
+
+        svg:hover {
+            -webkit-filter: drop-shadow(0px 0px 0px #2B76B3);
+        }
+    </style>
+</head>
+<body>
+<div id="map" style="width:100%;height: 100%;position: absolute;left: 0;top: 0;z-index: 1">
+</div>
+<div style="position: absolute;left: 5px;top: 5px;width: 350px;height: calc(100vh - 260px); background-color: rgba(255, 255, 255, 0.7);z-index: 100">
+    <div style="background-color:#00BFFF;color: white;margin-left:25px;padding:5px 0 5px 0;width: 300px;text-align: center;font-size: 14px;font-weight: bold">
+        4 Different Road Classes in London
+    </div>
+    <div style="padding-top: 15px;height: 50px">
+        <div style="width: 50%;float: left">
+            <input type="radio" name="type" value="Motorway">Motorway
+        </div>
+        <div style="width: 50%;float: left">
+            <input type="radio" name="type" value="A Road">A-Road
+        </div>
+        <div style="width: 50%;float: left">
+            <input type="radio" name="type" value="B Road">B-Road
+        </div>
+        <div style="width: 50%;float: left">
+            <input type="radio" name="type" value="Unclassified">Unclassified Road
+        </div>
+    </div>
+    <div style="padding: 15px 5px 15px 5px; white-space:normal; word-break:break-all; word-wrap:break-word; ">Road Class
+        Information,<a href="https://www.roads.org.uk/articles/road-numbers/numbers-and-b-roads">Roads.org.uk</a>,Accident
+        Severity Definitions,<a
+                href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/743853/reported-road-casualties-gb-notes-definitions.pdf">UK
+            Goverment</a></div>
+    <div id="btn" style="float: left;margin-left: 310px;">
+        <svg t="1618763987425" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+             p-id="2015" width="20" height="20">
+            <path d="M913 576.488h112.197L871.138 769.091 717.079 576.488H833V192H129v-80h784v464.488zM113 447.984H0L154.059 255.38l154.058 192.603H193V832h704v80H113V447.984z"
+                  fill="#1296db" p-id="2016"></path>
+        </svg>
+    </div>
+    <div id="myChart" style="height: 250px;width: 350px;float: left"></div>
+    <div id="myChart2" style="height: 250px;width: 350px;float: left"></div>
+    <div style="width: 100%;text-align: center;margin-top: -20px;float: left">Road Class</div>
+</div>
+<div style="position: fixed;right: 0;bottom: 0;width: 100vw;height: 250px;background-color: rgba(255, 255, 255, 0.7);z-index: 100">
+    <div style="width: 65%;height: 100%;float: left">
+        <div id="title" style="width: 100%;text-align: center;padding-top: 10px"></div>
+        <div id="text" style="width: 100%;padding: 10px 20px 0 20px"></div>
+    </div>
+    <div id="myChart3" style="width: 35%;height: 100%;float: left"></div>
+</div>
+<script>
+    const options = {
+        'Motorway': {
+            title: "Motorway",
+            title2: "Motorway",
+            text: "Motorways first came to Britain over three decades after the advent of the A-road numbering event, and as a result required a new numbering system. They were given an M prefix.Car speed limit is generally 70mph on motorways. <br\><br\>There are very few accidents on motorways in the London area, accounting for only 1% of the volume of accidents in 9 years, but due to speed limits and traffic flow, the proportion of fatal accidents is the highest of all road types.",
+            data: [0.92, 8.17, 90.92]
+        }, 'A Road': {
+            title: "A Road",
+            title2: "A-Road",
+            text: "A-roads are the major through-routes, forming the basic network of main roads and arteries.<br\><br\> The number of accidents on  A-roads is the largest, accounting for 67% of the total number of accidents in 9 years.The road conditions and speed limit on A-roads are second only to motorways.At the same time, the percentage of fatal car accidents of A-roads is second only to motorways",
+            data: [0.74, 11.70, 87.57]
+        }, 'B Road': {
+            title: "Motorway",
+            title2: "B-Road",
+            text: "B-roads are a lower class of road, often of a poorer physical standard, and forming links within the framework of A-roads. <br\><br\>The number of car accidents on B-roads accounted for 8% of the total number of car accidents in 9 years.The percentage of fatal car accidents on B-roads is less than that on A-roads.",
+            data: [0.69, 11.58, 87.74]
+        }, 'Unclassified': {
+            title: "Unclassified",
+            title2: "Unclassified-Road",
+            text: "Unclassified roads are  the minor roads that are left over - country lanes and city streets and they are not allocated with numbers in this scheme. Unclassified roads include a large part of local roads and community roads, and is generally considered to be the most road type in each city. <br\><br\>The total number of accidents on unclassified roads is not large compared to the number of roads of  this class in London, accounting for 23% of the total number of accidents in 9 years.Vehicles driving on roads of this type are usually at low speeds, and the percentage of fatal car accidents on unclassified road. is the smallest",
+            data: [0.62, 11.37, 88.01]
+        }
+    };
+    let myChart3 = null;
+
+
+    //Initialize the map
+    mapboxgl.accessToken = 'pk.eyJ1IjoicmljOTIiLCJhIjoiY2ttNjFnbzEzMDRxNzJ2bGF3ZjIza3ExdiJ9.HEEieF4NwtWQcSRejRNhdw';
+    let map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v9',
+        bounds: [[-0.515681, 51.283617], [0.334266, 51.688150]]
+    });
+    //Load local road network data
+    map.on("load", () => {
+        console.log("加载完成")
+        map.addSource("road", {
+            type: "geojson",
+            data: "./data1.geojson",
+        });
+        map.addLayer({
+            id: "road",
+            type: "line",
+            source: "road",
+            filter: ["==", "class", "Motorway"],
+            layout: {},
+            paint: {
+                "line-color": [
+                    "case",
+                    [
+                        "==",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "Motorway"
+                    ],
+                    "#FF0000",
+                    [
+                        "==",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "A Road"
+                    ],
+                    "#FFFF00",
+                    [
+                        "==",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "B Road"
+                    ],
+                    "#00FFFF",
+                    "#f50ad2"
+                ],
+                'line-width': [
+                    "case",
+                    [
+                        "==",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "Motorway"
+                    ],
+                    5,
+                    [
+                        "==",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "A Road"
+                    ],
+                    4,
+                    [
+                        "==",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "B Road"
+                    ],
+                    3,
+                    2
+                ],
+            }
+        });
+    })
+    initChart();
+
+    function initChart() {
+        let myChart = echarts.init(
+            document.getElementById("myChart")
+        );
+        // Draw bar chart
+        myChart.setOption({
+            tooltip: {
+                trigger: 'axis'
+            },
+            title: {
+                text: "Number of Accidents on 4 Road Classes",
+                textStyle: {color: "#000", fontSize: 14}
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Motorway', 'A Road', 'B Road', 'Unclassified'],
+                axisLabel: {
+                    interval: 0,
+                    rotate: 40
+                },
+            },
+            yAxis: {
+                type: 'value',
+            },
+            grid: {
+                x: 70,
+            },
+            series: [{
+                data: [2290, 153706, 18965, 55209],
+                type: 'bar',
+                barWidth: 30,
+                showBackground: true,
+                label: {
+                    show: true,
+                    position: 'top'
+                },
+                backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.2)'
+                }
+            }]
+        });
+        let myChart2 = echarts.init(
+            document.getElementById("myChart2")
+        );
+        // Draw line chart
+        myChart2.setOption({
+            title: {
+                text: "Percentage of Fatal Accidents \non 4 Road Classes",
+                textStyle: {color: "#000", fontSize: 14}
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            xAxis: {
+                // name:"Road Class",
+                // nameGap:25,
+                nameLocation: "center",
+                type: 'category',
+                data: ['Motorway', 'A Road', 'B Road', 'Unclassified'],
+                axisLabel: {
+                    interval: 0,
+                    rotate: 40
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: {
+                    formatter: function (value, index) {
+                        return value + '%';
+                    }
+                }
+            },
+            series: [{
+                data: [0.92, 0.74, 0.69, 0.62],
+                type: 'line',
+                showBackground: true,
+                label: {
+                    show: true,
+                    position: 'top'
+                },
+                backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.2)'
+                }
+            }]
+        });
+        $("#myChart2").hide();
+
+        initChart3(options["Motorway"]);
+
+
+    }
+
+    //Switch
+    function translate() {
+            $("#myChart").toggle();
+            $("#myChart2").toggle();
+    }
+
+    $("#btn").click(function () {
+        translate();
+    })
+
+    //Change table and text on the bottom 
+    function initChart3(data) {
+        $("#text").html(data.text);
+        $("#title").text(data.title);
+        if (!myChart3) {
+            myChart3 = echarts.init(
+                document.getElementById("myChart3")
+            );
+        }
+        // Draw bar chart
+        myChart3.setOption({
+            color: ['#00BFFF'],
+            tooltip: {
+                trigger: 'axis'
+            },
+            title: {
+                text: "Accident Severity Percentage on " + data.title2,
+                textStyle: {color: "#000", fontSize: 14}
+            },
+            xAxis: {
+                type: 'value'
+            },
+            yAxis: {
+                type: 'category',
+                data: ['Fatal', 'Serious', 'Slight'],
+                name: "Road Class",
+                nameLocation: "end",
+            },
+            series: [{
+                data: data.data,
+                type: 'bar',
+                barWidth: 30,
+                showBackground: true,
+                label: {
+                    show: true,
+                    position: 'right'
+                },
+                backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.2)'
+                }
+            }]
+        });
+    }
+
+    // Filter switching events
+    $("input[type='radio']").on("change", function () {
+        let val = $("input[name='type']:checked").val();
+        console.log(val);
+        if (val == "Motorway" || val == "A Road" || val == "B Road") {
+            map.setFilter("road", ["==", "class", val])
+        } else {
+            map.setFilter("road", ["!in", "class", "Motorway", "A Road", "B Road"])
+        }
+        initChart3(options[val])
+    })
+</script>
+</body>
+</html>

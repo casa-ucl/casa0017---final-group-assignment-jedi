@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>   
+<head>
+<meta charset='utf-8' />
+<title>Nature Condition</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js'></script>    
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css' rel='stylesheet' />
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, Sans-serif;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 30px;
+}
+
+h2 {
+  font-size: 16px;
+  line-height: 20px;
+  margin-bottom: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: #2dc4b2;
+}
+
+#console {
+  position: absolute;
+  width: 200px;
+  height: 450px; 
+  margin: 30px;
+  padding: 10px 20px;
+  opacity: 0.8;
+  background-color: dimgrey
+}
+    
+.session {
+  margin-bottom: 5px;
+}
+
+.row {
+  height: 60px;
+  width: 100%;
+  line-height: 20px;
+}
+
+.colors {
+  background: linear-gradient(to right, #2dc4b2, #3bb3c3, #669ec4, #8b88b6, #a2719b, #aa5e79);
+  margin-bottom: 5px;
+}
+
+.label {
+  width: 15%;
+  display: inline-block;
+  text-align: center;
+}
+
+</style>
+    
+</head>
+       
+<body>  
+    
+<div id="map"></div>
+<div id='console'>
+ <div class="session">
+   <h2>Year <label id="active-year">: 2012</label></h2>
+   <input id="slider" class="row" type="range" min="2012" max="2014" step="1" value="2012"/>
+ </div>
+    <h2>Road Surface Condition</h2>
+ <div class='row' id='filters1'>
+    <input id='all' type='radio' name='toggle1' value='all' checked='checked'>
+    <label for='all'>all</label><br />
+    <input id='dry' type='radio' name='toggle1' value='dry'>
+    <label for='dry'>dry</label><br />
+    <input id='wet/snow' type='radio' name='toggle1' value='wet/snow'>
+    <label for='wet/snow'>wet/snow</label><br />
+ </div>    
+    <h2>Light Condition</h2>
+ <div class='row' id='filters2'>
+    <input id='al' type='radio' name='toggle2' value='al' checked='checked'>
+    <label for='al'>all</label><br />
+    <input id='darkness' type='radio' name='toggle2' value='darkness'>
+    <label for='darkness'>darkness</label><br />
+    <input id='daylight' type='radio' name='toggle2' value='daylight'>
+    <label for='daylight'>daylight</label><br />
+ </div>  
+    <h2>Weather Condition</h2>
+ <div class='row' id='filters3'>
+    <input id='a' type='radio' name='toggle3' value='a' checked='checked'>
+    <label for='a'>all</label><br />
+    <input id='fine' type='radio' name='toggle3' value='fine'>
+    <label for='fine'>fine</label><br />
+    <input id='rain/snow/fog' type='radio' name='toggle3' value='rain/snow/fog'>
+    <label for='rain/snow/fog'>rain/snow/fog</label><br />
+ </div>  
+</div> 
+    
+<script>
+ mapboxgl.accessToken = 'pk.eyJ1IjoiemhpeWlxaWFuIiwiYSI6ImNraGx5Z3IzbzAxMWUyc2xneGRrZmJydGYifQ.AJF3EGG95ALsgb5AT2TZfg';
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/dark-v9',
+  center: [-0.118092, 51.509865], 
+  zoom: 10
+});
+
+map.on('load', function() {
+  var filterYear = ['==', ['get', 'Year'], 2012];
+  var filterRoad = ['!=', ['get', 'Road_Surface_Conditions'], 'placeholder'];
+  var filterLight = ['!=', ['string', ['get', 'Light_Conditions']], 'placeholder'];
+  var filterWeather = ['!=', ['string', ['get', 'Weather_Conditions']], 'placeholder'];
+    
+  map.addLayer({
+    id: 'data',
+    type: 'circle',
+    source: {
+      type: 'geojson',
+      data: 'accidents_2012.geojson' 
+    },
+    paint: {
+      'circle-color':'#669ec4',
+      'circle-opacity': 0.4,
+      'circle-radius':  {         
+        property: 'Accident_Severity',
+        stops: [
+         [{zoom: 10, value: 1}, 3],
+         [{zoom: 10, value: 3}, 2],
+         [{zoom: 12, value: 1}, 9],
+         [{zoom: 12, value: 3}, 3],
+         [{zoom: 16, value: 1}, 12],
+         [{zoom: 16, value: 3}, 4],
+      ]}
+    },
+      'filter': ['all', filterYear, filterRoad, filterLight, filterWeather]
+  });
+  
+  var mypopup = new mapboxgl.Popup({offset:[1,1],closeButton: false});    
+    
+  map.on('mouseover', 'data', function(e) {
+   mypopup
+    .setLngLat(e.features[0].geometry.coordinates)
+    .setHTML('<b>Date: </b>' + e.features[0].properties.Date + 
+             '<br/><b>Light:</b> ' + e.features[0].properties.Light_Conditions + 
+             '<br/><b>Weather:</b> ' + e.features[0].properties.Weather_Conditions)
+    .addTo(map);
+  });
+    
+  map.on('mouseenter', 'data', function(e) {
+      map.getCanvas().style.cursor = 'pointer';
+  });
+    
+  map.on('mouseleave', 'data', function(e) {
+      map.getCanvas().style.cursor = '';
+      mypopup.remove();
+  });      
+    
+  document.getElementById('slider').addEventListener('input', function (e) {
+    var Year = parseInt(e.target.value);
+    filterYear = ['==', ['get', 'Year'], Year];
+    map.setFilter('data', ['all', filterYear, filterRoad, filterLight, filterWeather]);
+    document.getElementById('active-year').innerText =': '+Year;
+  });
+        
+  document.getElementById('filters1').addEventListener('change', function(e) {
+   var Road_Surface_Conditions = e.target.value;
+   if (Road_Surface_Conditions === 'all') {
+     filterRoad = ['!=', ['get', 'Road_Surface_Conditions'], 'placeholder'];
+   } else if (Road_Surface_Conditions === 'dry') {
+     filterRoad = ['match', ['get', 'Road_Surface_Conditions'], 'Dry', true, false];
+   } else if (Road_Surface_Conditions === 'wet/snow') {
+     filterRoad = ['match', ['get', 'Road_Surface_Conditions'], 'Dry', false, true];
+   } else {
+     console.log('error');
+   }
+   map.setFilter('data', ['all', filterYear, filterRoad, filterLight, filterWeather]);
+ });
+    
+  document.getElementById('filters2').addEventListener('change', function(e) {
+   var Light_Conditions = e.target.value;
+   if (Light_Conditions === 'al') {
+     filterLight = ['!=', ['string', ['get', 'Light_Conditions']], 'placeholder'];
+   } else if (Light_Conditions === 'darkness') {
+     filterLight = ['match', ['get', 'Light_Conditions'], [
+                   'Darkeness: No street lighting',
+                   'Darkness: Street lighting unknown',
+                   'Darkness: Street lights present and lit',
+                   'Darkness: Street lights present but unlit'
+                   ], true, false];
+   } else if (Light_Conditions === 'daylight') {
+     filterLight = ['match', ['get', 'Light_Conditions'], 'Daylight: Street light present', true, false];
+   } else {
+     console.log('error');
+   }
+   map.setFilter('data', ['all', filterYear, filterRoad, filterLight, filterWeather]);
+ });
+    
+  document.getElementById('filters3').addEventListener('change', function(e) {
+   var Weather_Conditions = e.target.value;
+   if (Weather_Conditions === 'a') {
+     filterWeather = ['!=', ['string', ['get', 'Weather_Conditions']], 'placeholder'];
+   } else if (Weather_Conditions === 'fine') {
+     filterWeather = ['match', ['get', 'Weather_Conditions'], [
+                   'Fine without high winds',
+                   'Fine with high winds'
+                   ], true, false];
+   } else if (Weather_Conditions === 'rain/snow/fog') {
+     filterWeather = ['match', ['get', 'Weather_Conditions'], [
+                   'Fine without high winds',
+                   'Fine with high winds'
+                   ], false, true];
+   } else {
+     console.log('error');
+   }
+   map.setFilter('data', ['all', filterYear, filterRoad, filterLight, filterWeather]);
+ });
+});   
+</script>  
+</body>
+</html>
